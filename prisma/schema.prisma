@@ -1,0 +1,959 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model agg_dashboard_rollup {
+  dashboardrollupid Int    @id @default(autoincrement())
+  organizationid    Int?
+  destination       String @db.VarChar(10)
+  metrictype        String @db.VarChar(20)
+  metricname        String @db.VarChar(20)
+  metricvalue       Int
+
+  @@index([destination], map: "idx_agg_dashboard_rollup_destination")
+  @@index([organizationid], map: "idx_agg_dashboard_rollup_organizationid")
+}
+
+model agg_organizationratingtotal_bytime {
+  organizationratingtotalbytimeid Int               @id @default(autoincrement())
+  organizationid                  Int
+  destination                     String?           @db.VarChar(16)
+  timedimensionid                 Int
+  reviewcount                     Int
+  bodycount                       Int
+  averagerating                   Decimal           @default(0.000000) @db.Decimal(14, 6)
+  organization                    organization      @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_agg_orgratingtotal_bytime_organization")
+  agg_timedimension               agg_timedimension @relation(fields: [timedimensionid], references: [timedimensionid], onDelete: NoAction, onUpdate: NoAction, map: "fk_agg_orgratingtotal_bytime_timedimension")
+
+  @@index([organizationid], map: "fk_agg_orgratingtotal_bytime_organization_idx")
+  @@index([timedimensionid], map: "fk_agg_orgratingtotal_bytime_timedimension_idx")
+}
+
+model agg_profilegroupratingtotal_bytime {
+  profilegroupratingtotalbytimeid Int               @id @default(autoincrement())
+  profilegroupid                  Int
+  destination                     String?           @db.VarChar(16)
+  timedimensionid                 Int
+  reviewcount                     Int
+  bodycount                       Int
+  averagerating                   Decimal           @default(0.000000) @db.Decimal(14, 6)
+  profilegroup                    profilegroup      @relation(fields: [profilegroupid], references: [profilegroupid], onDelete: NoAction, onUpdate: NoAction, map: "fk_agg_profilegroupratingtotal_bytime_organization")
+  agg_timedimension               agg_timedimension @relation(fields: [timedimensionid], references: [timedimensionid], onDelete: NoAction, onUpdate: NoAction, map: "fk_agg_profilegroupratingtotal_bytime_timedimension")
+
+  @@index([profilegroupid], map: "fk_agg_profilegroupratingtotal_bytime_profilegroup_idx")
+  @@index([timedimensionid], map: "fk_agg_profilegroupratingtotal_bytime_timedimension_idx")
+}
+
+model agg_profilequestionratingtotal_bytime {
+  profilequestionratingtotalbytimeid Int                   @id @default(autoincrement())
+  organizationid                     Int?
+  docprofileid                       Int
+  destination                        String?               @db.VarChar(16)
+  timedimensionid                    Int
+  questionratingmappingid            Int
+  questioncount                      Int
+  ratingtotal                        Decimal               @default(0.000000) @db.Decimal(14, 6)
+  docprofile                         docprofile            @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_agg_profilequestionratingtotal_bytime_docprofile")
+  organization                       organization?         @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_agg_profilequestionratingtotal_bytime_organization")
+  questionratingmapping              questionratingmapping @relation(fields: [questionratingmappingid], references: [questionratingmappingid], onDelete: NoAction, onUpdate: NoAction, map: "fk_agg_profilequestionratingtotal_bytime_qrm")
+  agg_timedimension                  agg_timedimension     @relation(fields: [timedimensionid], references: [timedimensionid], onDelete: NoAction, onUpdate: NoAction, map: "fk_agg_profilequestionratingtotal_bytime_timedimension")
+
+  @@index([docprofileid], map: "fk_agg_profilequestionratingtotal_bytime_docprofile_idx")
+  @@index([organizationid], map: "fk_agg_profilequestionratingtotal_bytime_organization_idx")
+  @@index([questionratingmappingid], map: "fk_agg_profilequestionratingtotal_bytime_qrm_idx")
+  @@index([timedimensionid], map: "fk_agg_profilequestionratingtotal_bytime_timedimension_idx")
+}
+
+model agg_profileratingtotal_bytime {
+  profileratingtotalbytimeid Int               @id @default(autoincrement())
+  organizationid             Int?
+  docprofileid               Int
+  destination                String?           @db.VarChar(16)
+  timedimensionid            Int
+  reviewcount                Int
+  bodycount                  Int
+  ratingtotal                Decimal           @default(0.000000) @db.Decimal(14, 6)
+  docprofile                 docprofile        @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_agg_profileratingtotal_bytime_docprofile")
+  organization               organization?     @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_agg_profileratingtotal_bytime_organization")
+  agg_timedimension          agg_timedimension @relation(fields: [timedimensionid], references: [timedimensionid], onDelete: NoAction, onUpdate: NoAction, map: "fk_agg_profileratingtotal_bytime_timedimension")
+
+  @@index([docprofileid], map: "fk_agg_profileratingtotal_bytime_docprofile_idx")
+  @@index([organizationid], map: "fk_agg_profileratingtotal_bytime_organization_idx")
+  @@index([timedimensionid], map: "fk_agg_profileratingtotal_bytime_timedimension_idx")
+}
+
+model agg_timedimension {
+  timedimensionid                       Int                                     @id @default(autoincrement())
+  unit                                  String                                  @db.VarChar(2)
+  simpledate                            DateTime?                               @db.Date
+  year                                  Int?
+  month                                 Int?
+  day                                   Int?
+  agg_organizationratingtotal_bytime    agg_organizationratingtotal_bytime[]
+  agg_profilegroupratingtotal_bytime    agg_profilegroupratingtotal_bytime[]
+  agg_profilequestionratingtotal_bytime agg_profilequestionratingtotal_bytime[]
+  agg_profileratingtotal_bytime         agg_profileratingtotal_bytime[]
+  reportdatajsonstore                   reportdatajsonstore[]
+  sendlog                               sendlog[]
+}
+
+model auditlog {
+  auditlogid       Int           @id @default(autoincrement())
+  userid           Int?
+  organizationid   Int?
+  resourcetype     String        @db.VarChar(50)
+  resourceid       Int?
+  eventtype        String        @db.VarChar(50)
+  eventdescription String        @db.VarChar(200)
+  eventjsondata    String?       @db.Text
+  oldvalue         String?       @db.VarChar(200)
+  newvalue         String?       @db.VarChar(200)
+  created          DateTime      @db.DateTime(0)
+  organization     organization? @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_auditlog_org")
+  user             user?         @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "fk_auditlog_user")
+
+  @@index([organizationid], map: "fk_auditlog_org_idx")
+  @@index([userid], map: "fk_auditlog_user_idx")
+  @@index([resourceid], map: "resourceid")
+  @@index([resourcetype], map: "resourcetype")
+}
+
+model dataexport {
+  dataexportid    Int      @id @default(autoincrement())
+  organizationid  Int?
+  userid          Int
+  virtualfilename String?  @db.VarChar(250)
+  status          String   @db.VarChar(30)
+  exporttype      String   @db.VarChar(30)
+  filepath        String?  @db.VarChar(250)
+  filesize        Int?
+  totalrecords    Int?
+  writtenrecords  Int?
+  created         DateTime @db.DateTime(0)
+  lastmodified    DateTime @db.DateTime(0)
+  user            user     @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "fk_dataexport_userid")
+
+  @@index([userid], map: "fk_dataexport_userid")
+}
+
+model doclocation {
+  doclocationid Int         @id @default(autoincrement())
+  docprofileid  Int?
+  name          String      @db.VarChar(200)
+  address1      String?     @db.VarChar(100)
+  address2      String?     @db.VarChar(100)
+  city          String?     @db.VarChar(100)
+  state         String?     @db.VarChar(50)
+  zipcode       String?     @db.VarChar(30)
+  country       String?     @db.VarChar(30)
+  phone         String?     @db.VarChar(50)
+  lastmodified  DateTime    @db.DateTime(0)
+  created       DateTime    @db.DateTime(0)
+  docprofile    docprofile? @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_doclocation_docprofileid")
+
+  @@index([docprofileid], map: "fk_doclocation_docprofileid")
+  @@index([city], map: "idx_doclocation_city")
+  @@index([state], map: "idx_doclocation_state")
+}
+
+model docprofile {
+  docprofileid                          Int                                     @id @default(autoincrement())
+  specialtyid                           Int?
+  organizationid                        Int?
+  docprofileslug                        String?                                 @unique(map: "docprofileslug_index") @db.VarChar(100)
+  name                                  String                                  @db.VarChar(200)
+  email                                 String?                                 @db.VarChar(300)
+  url                                   String?                                 @db.VarChar(300)
+  imageurl                              String?                                 @db.VarChar(300)
+  about                                 String?                                 @db.VarChar(5000)
+  connectorkey                          String?                                 @unique(map: "docprofileconnectorkey_index") @db.VarChar(32)
+  npinumber                             String?                                 @db.VarChar(30)
+  stateid                               String?                                 @db.VarChar(64)
+  sourceid                              String?                                 @db.VarChar(64)
+  alternateprofileid                    String?                                 @db.VarChar(64)
+  reviewcount                           Int?
+  ratingtotal                           Int?
+  bodycount                             Int?
+  live                                  Int                                     @default(1) @db.TinyInt
+  status                                String?                                 @default("PUB") @db.VarChar(8)
+  lastmodified                          DateTime                                @db.DateTime(0)
+  created                               DateTime                                @db.DateTime(0)
+  agg_profilequestionratingtotal_bytime agg_profilequestionratingtotal_bytime[]
+  agg_profileratingtotal_bytime         agg_profileratingtotal_bytime[]
+  doclocation                           doclocation[]
+  organization                          organization?                           @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_docprofile_organizationid")
+  specialty                             specialty?                              @relation(fields: [specialtyid], references: [specialtyid], onDelete: NoAction, onUpdate: NoAction, map: "fk_docprofile_specialtyid")
+  docprofilejsonstore                   docprofilejsonstore[]
+  docprofilequestionratingtotal         docprofilequestionratingtotal[]
+  docprofileratingtotal                 docprofileratingtotal[]
+  fielddata                             fielddata[]
+  outboundlink                          outboundlink[]
+  profiledistribution                   profiledistribution[]
+  profilegroupprofile                   profilegroupprofile[]
+  questionrating                        questionrating[]
+  reportdatajsonstore                   reportdatajsonstore[]
+  review                                review[]
+  reviewtrackersprofilesummary          reviewtrackersprofilesummary[]
+  sendrecipientlog                      sendrecipientlog[]
+  userdocprofile                        userdocprofile[]
+
+  @@index([organizationid], map: "fk_docprofile_organizationid")
+  @@index([specialtyid], map: "fk_docprofile_specialtyid")
+  @@index([alternateprofileid], map: "idx_docprofile_altid")
+  @@index([npinumber], map: "idx_docprofile_npinumber")
+  @@index([sourceid], map: "idx_docprofile_sourceid")
+  @@index([stateid], map: "idx_docprofile_stateid")
+}
+
+model docprofilejsonstore {
+  docprofilejsonstoreid Int        @id @default(autoincrement())
+  docprofileid          Int
+  itemkey               String?    @db.VarChar(40)
+  jsondata              String     @db.Text
+  lastmodified          DateTime   @db.DateTime(0)
+  created               DateTime   @db.DateTime(0)
+  docprofile            docprofile @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_docprofilejsonstore_pro")
+
+  @@index([docprofileid], map: "fk_docprofilejsonstore_pro")
+  @@index([itemkey], map: "idx_docprofilejsonstore_itemkey")
+}
+
+model docprofilequestionratingtotal {
+  docprofilequestionratingtotalid Int                   @id @default(autoincrement())
+  docprofileid                    Int
+  questionratingmappingid         Int
+  destination                     String?               @db.VarChar(16)
+  questioncount                   Int
+  ratingtotal                     Decimal               @db.Decimal(14, 6)
+  docprofile                      docprofile            @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_dpquestionratingtotal_docprofile")
+  questionratingmapping           questionratingmapping @relation(fields: [questionratingmappingid], references: [questionratingmappingid], onDelete: NoAction, onUpdate: NoAction, map: "fk_dpquestionratingtotal_mapping")
+
+  @@index([questionratingmappingid], map: "fk_docprofilequestionratingtotal_mapping_idx")
+  @@index([docprofileid], map: "fk_docprofilequestionratingtotal_profile_idx")
+}
+
+model docprofileratingtotal {
+  docprofileratingtotalid Int        @id @default(autoincrement())
+  docprofileid            Int
+  destination             String?    @db.VarChar(16)
+  reviewcount             Int
+  bodycount               Int
+  ratingtotal             Decimal    @default(0.000000) @db.Decimal(14, 6)
+  docprofile              docprofile @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_docprofileratingtotal_docprofile")
+
+  @@index([docprofileid], map: "fk_docprofileratingtotal_docprofile")
+  @@index([destination], map: "idx_docprofileratingtotal_destination")
+}
+
+model emailreportrecipient {
+  emailreportrecipientid Int                  @id @default(autoincrement())
+  reportconfigurationid  Int?
+  type                   String?              @db.VarChar(10)
+  docprofileid           Int?
+  emailaddress           String?              @db.VarChar(45)
+  recipientname          String?              @db.VarChar(45)
+  meta                   String?              @db.Text
+  reportconfiguration    reportconfiguration? @relation(fields: [reportconfigurationid], references: [reportconfigurationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_emailreportrecipient_reportconfiguration")
+
+  @@index([reportconfigurationid], map: "fk_emailreportrecipient_reportconfiguration_idx")
+}
+
+model fielddata {
+  fielddataid       Int             @id @default(autoincrement())
+  fielddefinitionid Int
+  docprofileid      Int
+  data              String?         @db.VarChar(200)
+  lastmodified      DateTime        @db.DateTime(0)
+  created           DateTime        @db.DateTime(0)
+  docprofile        docprofile      @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_fielddata_docprofile")
+  fielddefinition   fielddefinition @relation(fields: [fielddefinitionid], references: [fielddefinitionid], onDelete: NoAction, onUpdate: NoAction, map: "fk_fielddata_fielddef")
+
+  @@index([data], map: "idx_fielddata_data")
+  @@index([docprofileid], map: "idx_fielddata_docprofile")
+  @@index([fielddefinitionid], map: "idx_fielddata_fielddef")
+}
+
+model fielddefinition {
+  fielddefinitionid Int          @id @default(autoincrement())
+  organizationid    Int
+  fieldtype         String       @db.VarChar(20)
+  label             String       @db.VarChar(100)
+  lastmodified      DateTime     @db.DateTime(0)
+  created           DateTime     @db.DateTime(0)
+  fielddata         fielddata[]
+  organization      organization @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_fielddef_org")
+
+  @@index([organizationid], map: "idx_fielddef_org")
+}
+
+model filehash {
+  filehashid       Int       @id @default(autoincrement())
+  surveyconfigslug String    @db.VarChar(100)
+  orgslug          String    @db.VarChar(100)
+  filehash         String    @db.VarChar(32)
+  filename         String    @db.VarChar(256)
+  created          DateTime? @default(now()) @db.DateTime(0)
+  lastmodified     DateTime? @default(now()) @db.DateTime(0)
+
+  @@index([filehash], map: "idx_filehash_filehash")
+}
+
+model ftplog {
+  ftplogid          Int          @id @default(autoincrement())
+  organizationid    Int
+  processidentifier String       @default("empty") @db.VarChar(100)
+  filename          String?      @db.VarChar(100)
+  parentdir         String?      @db.VarChar(300)
+  storedlocation    String?      @db.VarChar(300)
+  status            String?      @db.VarChar(40)
+  lastmodified      DateTime     @db.DateTime(0)
+  created           DateTime     @db.DateTime(0)
+  organization      organization @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_ftplog_org")
+
+  @@index([organizationid], map: "fk_ftplog_org")
+  @@index([filename], map: "idx_ftplog_filename")
+}
+
+model importfile {
+  importfileid   Int              @id @default(autoincrement())
+  organizationid Int
+  filename       String           @db.VarChar(100)
+  recordcount    Int
+  filebindpath   String           @db.VarChar(200)
+  processing     Int              @db.TinyInt
+  lastmodified   DateTime         @db.DateTime(0)
+  created        DateTime         @db.DateTime(0)
+  organization   organization     @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_importfile_org")
+  importfiledata importfiledata[]
+
+  @@index([organizationid], map: "fk_importfile_org")
+}
+
+model importfiledata {
+  importfiledataid   Int          @id @default(autoincrement())
+  importfileid       Int
+  organizationid     Int
+  npinumber          String?      @db.VarChar(30)
+  stateid            String?      @db.VarChar(64)
+  sourceid           String?      @db.VarChar(64)
+  alternateprofileid String?      @db.VarChar(64)
+  providername       String?      @db.VarChar(200)
+  jsondata           String       @db.Text
+  importfile         importfile   @relation(fields: [importfileid], references: [importfileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_importfiledata_importfile")
+  organization       organization @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_importfiledata_org")
+
+  @@index([importfileid], map: "fk_importfiledata_importfile")
+  @@index([organizationid], map: "fk_importfiledata_org")
+  @@index([alternateprofileid], map: "idx_importfiledata_alt")
+  @@index([npinumber], map: "idx_importfiledata_npinumber")
+  @@index([sourceid], map: "idx_importfiledata_sourceid")
+  @@index([stateid], map: "idx_importfiledata_stateid")
+}
+
+model organization {
+  organizationid                        Int                                     @id @default(autoincrement())
+  name                                  String                                  @db.VarChar(200)
+  slug                                  String?                                 @unique(map: "orgslug_index") @db.VarChar(100)
+  status                                String?                                 @db.VarChar(15)
+  vpsenabled                            Int                                     @default(0) @db.TinyInt
+  pressganeyclientid                    String?                                 @unique(map: "orgpressganeyclientid_index") @db.VarChar(20)
+  rtpid                                 String?                                 @unique(map: "rtpid") @db.VarChar(64)
+  connectid                             Int?                                    @unique(map: "connectid_UNIQUE")
+  lastmodified                          DateTime                                @db.DateTime(0)
+  created                               DateTime                                @db.DateTime(0)
+  agg_organizationratingtotal_bytime    agg_organizationratingtotal_bytime[]
+  agg_profilequestionratingtotal_bytime agg_profilequestionratingtotal_bytime[]
+  agg_profileratingtotal_bytime         agg_profileratingtotal_bytime[]
+  auditlog                              auditlog[]
+  docprofile                            docprofile[]
+  fielddefinition                       fielddefinition[]
+  ftplog                                ftplog[]
+  importfile                            importfile[]
+  importfiledata                        importfiledata[]
+  organizationdistribution              organizationdistribution[]
+  organizationsummary                   organizationsummary[]
+  profilegroup                          profilegroup[]
+  questionratingmapping                 questionratingmapping[]
+  reportconfiguration                   reportconfiguration[]
+  reviewtrackersorganizationsummary     reviewtrackersorganizationsummary[]
+  tag                                   tag[]
+  userorganization                      userorganization[]
+}
+
+model organizationdistribution {
+  organizationdistributionid Int          @default(autoincrement())
+  organizationid             Int
+  fivecommentcount           Int          @default(0)
+  fiveratingcount            Int          @default(0)
+  fourcommentcount           Int          @default(0)
+  fourratingcount            Int          @default(0)
+  threecommentcount          Int          @default(0)
+  threeratingcount           Int          @default(0)
+  twocommentcount            Int          @default(0)
+  tworatingcount             Int          @default(0)
+  onecommentcount            Int          @default(0)
+  oneratingcount             Int          @default(0)
+  organization               organization @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_organizationid")
+
+  @@id([organizationdistributionid, organizationid])
+  @@index([organizationid], map: "fk_organizationid_idx")
+}
+
+model organizationjsonstore {
+  organizationjsonstoreid Int      @id @default(autoincrement())
+  organizationid          Int
+  itemkey                 String?  @db.VarChar(40)
+  jsondata                String?  @db.MediumText
+  lastmodified            DateTime @db.DateTime(0)
+  created                 DateTime @db.DateTime(0)
+
+  @@index([organizationid], map: "fk_organizationjsonstore_org")
+  @@index([itemkey], map: "idx_organizationjsonstore_itemkey")
+}
+
+model organizationsummary {
+  organizationsummaryid Int          @id @default(autoincrement())
+  organizationid        Int
+  averagerating         Decimal      @default(0.000000) @db.Decimal(7, 6)
+  liveratingcount       Int          @default(0)
+  liveprofilecount      Int          @default(0)
+  organization          organization @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_organizationsummary_org")
+
+  @@index([organizationid], map: "fk_organizationsummary_org")
+}
+
+model outboundlink {
+  outboundlinkid Int         @id @default(autoincrement())
+  docprofileid   Int?
+  medicalvisitid Int?
+  hash           String      @db.VarChar(100)
+  url            String      @db.VarChar(2083)
+  useragent      String?     @db.VarChar(1000)
+  created        DateTime    @default(now()) @db.DateTime(0)
+  lastmodified   DateTime    @default(now()) @db.DateTime(0)
+  docprofile     docprofile? @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_outboundlink_docprofile")
+
+  @@index([docprofileid], map: "fk_outboundlink_docprof_idx")
+}
+
+model processlog {
+  processlogid           Int      @id @default(autoincrement())
+  organizationid         Int?
+  logtype                String   @db.VarChar(30)
+  processidentifier      String   @db.VarChar(100)
+  filename               String   @default("empty") @db.VarChar(300)
+  successcount           Int?
+  errorcount             Int?
+  noteligiblecount       Int?
+  lastmodified           DateTime @db.DateTime(0)
+  created                DateTime @db.DateTime(0)
+  surveyprocessingconfig String?  @default("") @db.VarChar(100)
+
+  @@index([organizationid], map: "processlogorganizationid_index")
+}
+
+model profiledistribution {
+  profiledistributionid Int        @default(autoincrement())
+  docprofileid          Int
+  fivecommentcount      Int        @default(0)
+  fiveratingcount       Int        @default(0)
+  fourcommentcount      Int        @default(0)
+  fourratingcount       Int        @default(0)
+  threecommentcount     Int        @default(0)
+  threeratingcount      Int        @default(0)
+  twocommentcount       Int        @default(0)
+  tworatingcount        Int        @default(0)
+  onecommentcount       Int        @default(0)
+  oneratingcount        Int        @default(0)
+  docprofile            docprofile @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_docprofileid")
+
+  @@id([profiledistributionid, docprofileid])
+  @@index([docprofileid], map: "fk_docprofileid_idx")
+}
+
+model profilegroup {
+  profilegroupid                     Int                                  @id @default(autoincrement())
+  organizationid                     Int
+  name                               String                               @db.VarChar(200)
+  slug                               String                               @db.VarChar(100)
+  lastmodified                       DateTime                             @db.DateTime(0)
+  created                            DateTime                             @db.DateTime(0)
+  agg_profilegroupratingtotal_bytime agg_profilegroupratingtotal_bytime[]
+  organization                       organization                         @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_profilegroup_org")
+  profilegroupprofile                profilegroupprofile[]
+  rollupdistribution                 rollupdistribution[]
+  rollupratingtotal                  rollupratingtotal[]
+
+  @@index([organizationid], map: "profilegroup_org_fk_idx")
+  @@index([slug])
+}
+
+model profilegroupprofile {
+  profilegroupid Int
+  docprofileid   Int
+  docprofile     docprofile   @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_profilegroupprofile_docprofile")
+  profilegroup   profilegroup @relation(fields: [profilegroupid], references: [profilegroupid], onDelete: NoAction, onUpdate: NoAction, map: "fk_profilegroupprofile_profilegroup")
+
+  @@id([profilegroupid, docprofileid])
+  @@index([docprofileid], map: "profilegroupprofile_docprofile_idx")
+  @@index([profilegroupid], map: "profilegroupprofile_profilegroup_idx")
+}
+
+model questionrating {
+  questionratingid        Int                   @id @default(autoincrement())
+  reviewid                Int
+  docprofileid            Int
+  questionratingmappingid Int
+  rating                  Decimal               @db.Decimal(8, 6)
+  docprofile              docprofile            @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_questionrating_docprofile")
+  questionratingmapping   questionratingmapping @relation(fields: [questionratingmappingid], references: [questionratingmappingid], onDelete: NoAction, onUpdate: NoAction, map: "fk_questionrating_qrmapping")
+  review                  review                @relation(fields: [reviewid], references: [reviewid], onDelete: NoAction, onUpdate: NoAction, map: "fk_questionrating_review")
+
+  @@index([reviewid], map: "fk_questionrating_1_idx")
+  @@index([docprofileid], map: "fk_questionrating_2_idx")
+  @@index([questionratingmappingid], map: "fk_questionrating_3_idx")
+}
+
+model questionratingmapping {
+  questionratingmappingid               Int                                     @id @default(autoincrement())
+  organizationid                        Int
+  field                                 String                                  @db.VarChar(50)
+  questiontext                          String?                                 @db.VarChar(255)
+  questionorder                         Int                                     @default(0)
+  questiongroup                         String                                  @db.VarChar(50)
+  visible                               Boolean?
+  agg_profilequestionratingtotal_bytime agg_profilequestionratingtotal_bytime[]
+  docprofilequestionratingtotal         docprofilequestionratingtotal[]
+  questionrating                        questionrating[]
+  organization                          organization                            @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_questionratingmapping_org")
+
+  @@index([organizationid], map: "fk_questionratingmapping_1_idx")
+}
+
+model reportconfiguration {
+  reportconfigurationid Int                    @id @default(autoincrement())
+  organizationid        Int
+  reporttype            String                 @db.VarChar(45)
+  name                  String                 @db.VarChar(128)
+  lastrundate           DateTime?              @db.DateTime(0)
+  nextrundate           DateTime?              @db.DateTime(0)
+  emailsendfrequency    String?                @db.VarChar(25)
+  emailsendscheduleday  String?                @db.VarChar(25)
+  subject               String?                @db.VarChar(250)
+  title                 String?                @db.VarChar(250)
+  logourl               String?                @db.VarChar(500)
+  replytoname           String?                @db.VarChar(128)
+  replytoemail          String?                @db.VarChar(128)
+  enabled               Int                    @default(0) @db.TinyInt
+  deleted               Int                    @default(0) @db.TinyInt
+  meta                  String?                @db.Text
+  lastmodified          DateTime?              @db.DateTime(0)
+  allprofilerecipient   String?                @default("NONE") @db.VarChar(10)
+  emailreportrecipient  emailreportrecipient[]
+  organization          organization           @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_reportconfiguration_organization")
+  reportdatajsonstore   reportdatajsonstore[]
+  sendlog               sendlog[]
+
+  @@index([organizationid], map: "fk_reportconfiguration_organization_idx")
+}
+
+model reportdatajsonstore {
+  reportdatajsonstoreid   Int                 @id @default(autoincrement())
+  reportconfigurationid   Int
+  docprofileid            Int
+  jsondata                String              @db.Text
+  lookbacktimedimensionid Int
+  lastmodified            DateTime            @db.DateTime(0)
+  created                 DateTime            @db.DateTime(0)
+  docprofile              docprofile          @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_reportdatajsonstore_docprofile")
+  reportconfiguration     reportconfiguration @relation(fields: [reportconfigurationid], references: [reportconfigurationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_reportdatajsonstore_org")
+  agg_timedimension       agg_timedimension   @relation(fields: [lookbacktimedimensionid], references: [timedimensionid], onDelete: NoAction, onUpdate: NoAction, map: "fk_reportdatajsonstore_timedim")
+
+  @@index([docprofileid], map: "fk_reportdatajsonstore_docprofile")
+  @@index([reportconfigurationid], map: "fk_reportdatajsonstore_reportconfig")
+  @@index([lookbacktimedimensionid], map: "fk_reportdatajsonstore_timedimension")
+}
+
+model review {
+  reviewid         Int              @id @default(autoincrement())
+  docprofileid     Int?
+  treatmentid      Int?
+  reviewslug       String?          @db.VarChar(16)
+  rating           Int
+  rawrating        Decimal          @default(0.000000) @db.Decimal(8, 6)
+  body             String?          @db.VarChar(3000)
+  sentiment        String?          @db.VarChar(30)
+  email            String?          @db.VarChar(200)
+  displayname      String?          @default("") @db.VarChar(100)
+  reviewsource     String?          @db.VarChar(30)
+  reviewsourceid   String?          @db.VarChar(64)
+  reviewdate       DateTime         @db.DateTime(0)
+  enabled          Int?             @default(1) @db.TinyInt
+  hasbody          Int?             @default(1) @db.TinyInt
+  status           String?          @default("PUBL") @db.VarChar(10)
+  destination      String?          @db.VarChar(3)
+  maturity         String           @default("FRESH") @db.VarChar(10)
+  publishdate      DateTime?        @db.DateTime(0)
+  distributiondate DateTime?        @db.DateTime(0)
+  lastmodified     DateTime         @db.DateTime(0)
+  created          DateTime         @db.DateTime(0)
+  body2            String?          @db.VarChar(3000)
+  sentiment2       String?          @db.VarChar(30)
+  body3            String?          @db.VarChar(3000)
+  sentiment3       String?          @db.VarChar(30)
+  body4            String?          @db.VarChar(3000)
+  commentedited    Boolean?         @default(false)
+  sentiment4       String?          @db.VarChar(30)
+  response         String?          @db.VarChar(3000)
+  responsedate     DateTime?        @db.DateTime(0)
+  responseauthor   String?          @db.VarChar(200)
+  archivereason    String?          @db.VarChar(100)
+  autotagged       Boolean          @default(false)
+  age              Int?             @db.UnsignedTinyInt
+  dob              DateTime?        @db.DateTime(0)
+  gender           String?          @db.VarChar(50)
+  race             String?          @db.VarChar(50)
+  language         String?          @db.VarChar(50)
+  patientid        String?          @db.VarChar(255)
+  questionrating   questionrating[]
+  docprofile       docprofile?      @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_review_docprofileid")
+  treatment        treatment?       @relation(fields: [treatmentid], references: [treatmentid], onDelete: Restrict, onUpdate: Restrict, map: "fk_review_treatmentid")
+  reviewtag        reviewtag[]
+
+  @@index([docprofileid], map: "fk_review_docprofileid")
+  @@index([treatmentid], map: "fk_review_treatmentid")
+  @@index([created], map: "idx_review_created")
+  @@index([destination], map: "idx_review_destination")
+  @@index([maturity], map: "idx_review_maturity")
+  @@index([reviewdate], map: "idx_review_reviewdate")
+  @@index([reviewsource], map: "idx_review_reviewsource")
+  @@index([reviewsourceid], map: "idx_review_reviewsourceid")
+  @@index([status], map: "idx_review_status")
+}
+
+model reviewtag {
+  reviewtagid    Int       @id @default(autoincrement())
+  reviewid       Int
+  tagid          Int
+  sentiment      String?   @db.VarChar(45)
+  sentimentscore Decimal   @db.Decimal(14, 6)
+  sentimentnlp   String?   @db.VarChar(45)
+  modified       Boolean?
+  created        DateTime? @db.DateTime(0)
+  lastmodified   DateTime? @db.DateTime(0)
+  review         review    @relation(fields: [reviewid], references: [reviewid], onDelete: NoAction, onUpdate: NoAction, map: "fk_review_tag_review")
+  tag            tag       @relation(fields: [tagid], references: [tagid], onDelete: NoAction, onUpdate: NoAction, map: "fk_review_tag_tag")
+
+  @@index([reviewid], map: "fk_review_tag_review")
+  @@index([tagid], map: "fk_review_tag_tag_idx")
+}
+
+model reviewtrackerslocation {
+  reviewtrackerslocationid Int      @id @default(autoincrement())
+  accountid                String   @db.VarChar(50)
+  locationid               String   @db.VarChar(50)
+  locationname             String?  @db.VarChar(500)
+  externalid               String?  @db.VarChar(100)
+  created                  DateTime @default(now()) @db.DateTime(0)
+  lastmodified             DateTime @default(now()) @db.DateTime(0)
+
+  @@index([accountid], map: "accountid_idx")
+}
+
+model reviewtrackersorganizationsummary {
+  reviewtrackersorganizationsummaryid Int          @id @default(autoincrement())
+  organizationid                      Int
+  groupid                             String?      @db.VarChar(50)
+  sourceid                            String       @db.VarChar(50)
+  sourcename                          String       @db.VarChar(200)
+  code                                String       @db.VarChar(50)
+  totalreviews                        Int
+  averagerating                       Decimal      @db.Decimal(14, 6)
+  created                             DateTime     @db.DateTime(0)
+  lastmodified                        DateTime     @db.DateTime(0)
+  organization                        organization @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "organizationid")
+
+  @@index([organizationid], map: "organizationid_idx")
+}
+
+model reviewtrackersprofilesummary {
+  reviewtrackersprofilesummaryid Int        @id @default(autoincrement())
+  docprofileid                   Int
+  groupid                        String?    @db.VarChar(50)
+  monitoringprofileid            String     @db.VarChar(50)
+  sourceid                       String     @db.VarChar(50)
+  sourcename                     String     @db.VarChar(200)
+  code                           String     @db.VarChar(50)
+  totalreviews                   Int?
+  averagerating                  Decimal?   @db.Decimal(14, 6)
+  url                            String?    @db.VarChar(500)
+  created                        DateTime   @default(now()) @db.DateTime(0)
+  lastmodified                   DateTime   @default(now()) @db.DateTime(0)
+  docprofile                     docprofile @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_rtlsdocprofileid")
+
+  @@index([docprofileid], map: "rtprofilesumdpid_idx")
+}
+
+model reviewtrackersreview {
+  reviewtrackersreviewid Int       @id @default(autoincrement())
+  accountid              String    @db.VarChar(50)
+  locationid             String    @db.VarChar(50)
+  locationname           String?   @db.VarChar(500)
+  site                   String    @db.VarChar(45)
+  siteurl                String    @db.VarChar(500)
+  reviewid               String    @db.VarChar(50)
+  reviewstatus           String    @db.VarChar(45)
+  exactrating            Decimal?  @db.Decimal(14, 6)
+  rating                 Int
+  comment                String?   @db.VarChar(3000)
+  commentauthor          String?   @db.VarChar(100)
+  reviewdate             DateTime  @default(now()) @db.DateTime(0)
+  createdAt              DateTime  @default(now()) @db.DateTime(0)
+  updatedAt              DateTime  @default(now()) @db.DateTime(0)
+  deletedAt              DateTime? @default(now()) @db.DateTime(0)
+  created                DateTime  @default(now()) @db.DateTime(0)
+  lastmodified           DateTime  @default(now()) @db.DateTime(0)
+
+  @@index([accountid], map: "accountid_idx")
+  @@index([createdAt], map: "createdAt_idx")
+  @@index([updatedAt], map: "updatedAt_idx")
+}
+
+model rollupdistribution {
+  rollupdistributionid Int          @default(autoincrement())
+  profilegroupid       Int
+  fivecommentcount     Int          @default(0)
+  fiveratingcount      Int          @default(0)
+  fourcommentcount     Int          @default(0)
+  fourratingcount      Int          @default(0)
+  threecommentcount    Int          @default(0)
+  threeratingcount     Int          @default(0)
+  twocommentcount      Int          @default(0)
+  tworatingcount       Int          @default(0)
+  onecommentcount      Int          @default(0)
+  oneratingcount       Int          @default(0)
+  profilegroup         profilegroup @relation(fields: [profilegroupid], references: [profilegroupid], onDelete: NoAction, onUpdate: NoAction, map: "fk_profilegroupid")
+
+  @@id([rollupdistributionid, profilegroupid])
+  @@index([profilegroupid], map: "fk_profilegroupid_idx")
+}
+
+model rollupquestionratingtotal {
+  rollupquestionratingtotalid Int     @id @default(autoincrement())
+  profilegroupid              Int
+  questionratingmappingid     Int
+  destination                 String? @db.VarChar(16)
+  questioncount               Int
+  ratingtotal                 Decimal @db.Decimal(14, 6)
+  averagerating               Decimal @db.Decimal(14, 6)
+}
+
+model rollupratingtotal {
+  rollupratingtotalid Int          @id @default(autoincrement())
+  profilegroupid      Int
+  destination         String?      @db.VarChar(16)
+  averagerating       Decimal      @default(0.000000) @db.Decimal(14, 6)
+  liveratingcount     Int          @default(0)
+  liveprofilecount    Int          @default(0)
+  bodycount           Int
+  profilegroup        profilegroup @relation(fields: [profilegroupid], references: [profilegroupid], onDelete: NoAction, onUpdate: NoAction, map: "fk_rollupratingtotal_profilegroup")
+
+  @@index([profilegroupid], map: "fk_rollupratingtotal_profilegroup")
+  @@index([destination], map: "idx_rollupratingtotal_destination")
+}
+
+model sendlog {
+  sendlogid                Int                 @id @default(autoincrement())
+  reportconfigurationid    Int
+  reportingtimedimensionid Int
+  sendtype                 String              @db.VarChar(45)
+  sentbyuserid             Int?
+  created                  DateTime            @default(now()) @db.DateTime(0)
+  reportconfiguration      reportconfiguration @relation(fields: [reportconfigurationid], references: [reportconfigurationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_reportconfigurationid")
+  agg_timedimension        agg_timedimension   @relation(fields: [reportingtimedimensionid], references: [timedimensionid], onDelete: NoAction, onUpdate: NoAction, map: "fk_reportingtimedimensionid")
+  sendrecipientlog         sendrecipientlog[]
+
+  @@index([reportconfigurationid], map: "sendlogreportconfigurationid_idx")
+  @@index([reportingtimedimensionid], map: "sendlogreportingtimedimensionid_idx")
+}
+
+model sendrecipientlog {
+  sendrecipientlogid Int        @id @default(autoincrement())
+  sendlogid          Int
+  docprofileid       Int
+  email              String     @db.VarChar(256)
+  docprofile         docprofile @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_sendrecipientdocprofileid")
+  sendlog            sendlog    @relation(fields: [sendlogid], references: [sendlogid], onDelete: NoAction, onUpdate: NoAction, map: "fk_sendrecipientsendlogid")
+
+  @@index([docprofileid], map: "fk_sendrecipientdocprofileid_idx")
+  @@index([sendlogid], map: "fk_sendrecipientsendlogid_idx")
+}
+
+model smartrequestlink {
+  smartrequestlinkid Int      @id @unique(map: "smartrequestlinkid")
+  docprofileid       Int?
+  medicalvisitid     Int?
+  hash               String   @db.VarChar(100)
+  url                String   @db.VarChar(2083)
+  useragent          String?  @db.VarChar(1000)
+  created            DateTime @default(now()) @db.DateTime(0)
+  lastmodified       DateTime @default(now()) @db.DateTime(0)
+}
+
+model smartrequestsummary {
+  smartrequestsummaryid Int      @id @unique(map: "smartrequestsummaryid")
+  docprofileid          Int
+  groupid               String?  @db.VarChar(50)
+  monitoringprofileid   String   @db.VarChar(50)
+  sourceid              String   @db.VarChar(50)
+  sourcename            String   @db.VarChar(200)
+  code                  String   @db.VarChar(50)
+  totalreviews          Int?
+  averagerating         Decimal? @db.Decimal(14, 6)
+  url                   String?  @db.VarChar(500)
+  created               DateTime @default(now()) @db.DateTime(0)
+  lastmodified          DateTime @default(now()) @db.DateTime(0)
+  npinumber             String?  @db.VarChar(30)
+  clientid              String?  @db.VarChar(64)
+}
+
+model specialty {
+  specialtyid   Int          @id @default(autoincrement())
+  name          String       @db.VarChar(200)
+  specialtytype String?      @db.VarChar(20)
+  created       DateTime     @db.DateTime(0)
+  docprofile    docprofile[]
+
+  @@index([name], map: "idx_specialty_name")
+  @@index([name], map: "name_index")
+}
+
+model tag {
+  tagid           Int           @id @default(autoincrement())
+  organizationid  Int?
+  themeid         Int?
+  label           String?       @db.VarChar(100)
+  displayname     String?       @db.VarChar(100)
+  slug            String?       @db.VarChar(100)
+  tagtype         String?       @db.VarChar(10)
+  tagorder        Int           @default(100)
+  hidden          Boolean       @default(false)
+  publiclyvisible Boolean       @default(true)
+  created         DateTime?     @db.DateTime(0)
+  lastmodified    DateTime?     @db.DateTime(0)
+  reviewtag       reviewtag[]
+  organization    organization? @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_tag_organization")
+
+  @@index([organizationid], map: "fk_tag_organization")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model tagcopy {
+  tagid           Int       @default(0)
+  organizationid  Int?
+  label           String?   @db.VarChar(100)
+  displayname     String?   @db.VarChar(100)
+  slug            String?   @db.VarChar(100)
+  tagtype         String?   @db.VarChar(10)
+  tagorder        Int       @default(100)
+  hidden          Boolean   @default(false)
+  publiclyvisible Boolean   @default(true)
+  created         DateTime? @db.DateTime(0)
+  lastmodified    DateTime? @db.DateTime(0)
+
+  @@ignore
+}
+
+model token {
+  tokenid   Int       @id @default(autoincrement())
+  userid    Int
+  tokentype String?   @db.VarChar(32)
+  token1    String?   @db.VarChar(64)
+  token2    String?   @db.VarChar(64)
+  created   DateTime? @db.DateTime(0)
+  user      user      @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "fk_token_user1")
+
+  @@index([userid], map: "fk_token_user1")
+}
+
+model treatment {
+  treatmentid   Int      @id @default(autoincrement())
+  name          String   @db.VarChar(200)
+  treatmenttype String?  @db.VarChar(20)
+  created       DateTime @db.DateTime(0)
+  review        review[]
+
+  @@index([name], map: "name_index")
+}
+
+model user {
+  userid           Int                @id @default(autoincrement())
+  firstname        String?            @db.VarChar(100)
+  lastname         String?            @db.VarChar(100)
+  middlename       String?            @db.VarChar(100)
+  email            String             @unique(map: "user_email_unique") @db.VarChar(200)
+  timezone         String?            @db.VarChar(45)
+  passworddigest   String?            @db.VarChar(64)
+  salt             String?            @db.VarChar(16)
+  userrole         String?            @db.VarChar(50)
+  active           Boolean?
+  lastlogin        DateTime?          @db.DateTime(0)
+  usingsso         Boolean            @default(false)
+  auditlog         auditlog[]
+  dataexport       dataexport[]
+  token            token[]
+  userdocprofile   userdocprofile[]
+  usernotification usernotification[]
+  userorganization userorganization[]
+}
+
+model userdocprofile {
+  userid       Int
+  docprofileid Int
+  docprofile   docprofile @relation(fields: [docprofileid], references: [docprofileid], onDelete: NoAction, onUpdate: NoAction, map: "fk_userdocprofilelink_docprofileid")
+  user         user       @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "fk_userdocprofilelink_userid")
+
+  @@id([userid, docprofileid])
+  @@index([docprofileid], map: "fk_userdocprofilelink_docprofileid")
+  @@index([userid], map: "fk_userdocprofilelink_userid")
+}
+
+model usernotification {
+  usernotificationid Int      @id @default(autoincrement())
+  userid             Int
+  notificationtype   String?  @db.VarChar(50)
+  notificationperiod String?  @db.VarChar(50)
+  created            DateTime @default(now()) @db.DateTime(0)
+  lastmodified       DateTime @default(now()) @db.DateTime(0)
+  user               user     @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "fk_usernotuserid")
+
+  @@index([userid], map: "usernotif_user_idx")
+}
+
+model userorganization {
+  userid         Int
+  organizationid Int
+  organization   organization @relation(fields: [organizationid], references: [organizationid], onDelete: NoAction, onUpdate: NoAction, map: "fk_userorganizationlink_organizationid")
+  user           user         @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "fk_userorganizationlink_userid")
+
+  @@id([userid, organizationid])
+  @@index([organizationid], map: "fk_userorganizationlink_organizationid")
+  @@index([userid], map: "fk_userorganizationlink_userid")
+}
+
+model yext {
+  yextid               Int       @id @default(autoincrement())
+  organizationid       Int       @unique(map: "organizationid_UNIQUE")
+  enabled              Int       @default(0)
+  accountname          String?   @db.VarChar(256)
+  appspecificaccountid String?   @unique(map: "appspecificaccountid_UNIQUE") @db.VarChar(256)
+  accesstoken          String?   @db.VarChar(1024)
+  csrf                 String?   @db.VarChar(32)
+  lastmodified         DateTime? @db.DateTime(0)
+  created              DateTime? @default(now()) @db.DateTime(0)
+}
